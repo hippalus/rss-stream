@@ -1,0 +1,21 @@
+spring:
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+      properties:
+        sasl:
+          mechanism: PLAIN
+          #jaas:
+          #  config: config
+        security:
+          protocol: PLAINTEXT
+      key-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      client-id: feed-fetcher
+
+fetcher:
+  rss-feed-providers:
+    outages:
+      url: http://localhost:8090
+      fetch-period: PT20S
+      output-topic: outages
