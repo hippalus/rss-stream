@@ -41,11 +41,18 @@ Outages.xml is the feed itself - it contains test data that needs to be processe
 # Tips
 
 - Choose your libraries right - if you get stuck with one, try another solution
-- Parsing and producing correct JSON files is the most important, if you are running out of time, you can skip comparing your JSONs against the reference files
+- Parsing and producing correct JSON files is the most important, if you are running out of time, you can skip comparing your
+  JSONs against the reference files
 - If you have questions regarding the project or something is not clear you can let us know
 
 # Disclaimer
 
-This programming challenge is one step in a multiple step hiring process. It is a means to assess the competency of our candidates.
-The work you will do - including writing code and/or designing software - is NOT going to be reused, copied or in any form replicated by us or any of our third parties.
+This programming challenge is one step in a multiple step hiring process. It is a means to assess the competency of our
+candidates.
+The work you will do - including writing code and/or designing software - is NOT going to be reused, copied or in any form
+replicated by us or any of our third parties.
 If you have any concerns - related to what is stated above or the programming challenge itself - please contact us.
+
+## Architecture and Design Choices
+
+![system-design.png](docs%2Fsystem-design.png)
