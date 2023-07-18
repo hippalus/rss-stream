@@ -146,10 +146,12 @@ cd scripts
 sh test.sh
 ```
 
-## Kafka UI
-
-Monitoring for Kafka please visit url http://localhost:8084/topics
-
 ## To Check Outage Json Files
 
-![img_4.png](docs%2Fimg_4.png)
+![rss-stream_outages-volumes.png](docs%2Frss-stream_outages-volumes.png)
+
+## Kafka UI
+
+Monitoring for Kafka http://localhost:8084
+
+![img_5.png](docs%2Fimg_5.png)
