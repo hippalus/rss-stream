@@ -78,6 +78,8 @@ public class OutagesFetcherRestAdapter implements FetcherService {
 
         final List<Element> foreignMarkup = syndEntry.getForeignMarkup();
 
+        final String postalCodes = extractFromForeignMarkup(foreignMarkup, "postalCodes");
+
         return Item.builder()
                 .title(trim(syndEntry.getTitle()))
                 .link(link(syndEntry))
@@ -86,7 +88,7 @@ public class OutagesFetcherRestAdapter implements FetcherService {
                 .expectedEndDate(extractFromForeignMarkup(foreignMarkup, "expectedEndDate"))
                 .categoryJames(extractFromForeignMarkup(foreignMarkup, "category"))
                 .description(syndEntry.getDescription() != null ? trim(syndEntry.getDescription().getValue()) : null)
-                .postalCodes(extractFromForeignMarkup(foreignMarkup, "postalCodes"))
+                .postalCodes(postalCodes == null ? "" : postalCodes)
                 .locations(extractFromForeignMarkup(foreignMarkup, "locations"))
                 .channel(channel)
                 .build();

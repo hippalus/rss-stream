@@ -54,8 +54,6 @@ services:
     container_name: feed-simulator
     ports:
       - "8090:8090"
-    volumes:
-      - ../:/production
 
   fetcher:
     build:
@@ -74,8 +72,6 @@ services:
     environment:
       OUTAGES_RSS_URL: http://feed-simulator:8090
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-    volumes:
-      - ../:/production
 
   parser:
     build:
@@ -93,6 +89,8 @@ services:
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     volumes:
-      - ../:/production
+      - outages:/app
+
 volumes:
   kafka-data:
+  outages:
