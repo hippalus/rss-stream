@@ -25,7 +25,7 @@ spring:
 
 rss-stream-parser-app:
   scheduling:
-    enable: true
+    enable: false
   topics:
     outages:
       name: outages
@@ -43,7 +43,3 @@ rss-stream-parser-app:
     business-outages-file: ${BUSINESS_OUTAGES_FILE:business_outages.json}
     customer-outages-file: ${CUSTOMER_OUTAGES_FILE:customer_outages.json}
     indent-output-enabled: true
-
-
-server:
-  port: 8092

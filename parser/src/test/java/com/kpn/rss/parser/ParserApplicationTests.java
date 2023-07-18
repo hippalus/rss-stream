@@ -1,9 +1,9 @@
 package com.kpn.rss.parser;
 
+import com.kpn.rss.parser.common.IT;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+@IT
 class ParserApplicationTests {
 
     @Test

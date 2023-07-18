@@ -31,7 +31,7 @@ public class KafkaTopicConfiguration {
     public NewTopic outagesTopic() {
         final TopicProperties outageTopic = this.feedProviderConfigurations.getOutputTopic(ProviderId.OUTAGES);
         return TopicBuilder.name(outageTopic.getName())
-                .replicas(outageTopic.getPartition())
+                .replicas(outageTopic.getReplication())
                 .partitions(outageTopic.getPartition())
                 .build();
     }

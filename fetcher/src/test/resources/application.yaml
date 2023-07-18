@@ -16,7 +16,7 @@ spring:
 
 fetcher:
   scheduling:
-    enable: true
+    enable: false
   rss-feed-providers:
     outages:
       url: ${OUTAGES_RSS_URL:http://localhost:8090}
