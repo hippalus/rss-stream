@@ -55,4 +55,6 @@ If you have any concerns - related to what is stated above or the programming ch
 
 ## Architecture and Design Choices
 
-![system-design.png](docs%2Fsystem-design.png)
+![SystemDesign.png](docs%2FSystemDesign.png)
+
+![KStreamsTopologyGraph.png](docs%2FKStreamsTopologyGraph.png)

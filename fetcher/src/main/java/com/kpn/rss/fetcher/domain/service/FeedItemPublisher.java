@@ -4,5 +4,5 @@ import com.kpn.rss.fetcher.domain.model.Item;
 
 public interface FeedItemPublisher {
 
-    void publish(String target, Object key, Item value);
+    void publish(String topic, Object key, Item value);
 }

@@ -31,38 +31,6 @@ services:
       - ./scripts/update_run.sh:/tmp/update_run.sh
     command: "bash -c 'if [ ! -f /tmp/update_run.sh ]; then echo \"ERROR: Did you forget the update_run.sh file that came with this docker-compose.yml file?\" && exit 1 ; else /tmp/update_run.sh && /etc/confluent/docker/run ; fi'"
 
-  kafka-connect:
-    image: confluentinc/cp-kafka-connect:7.3.1
-    hostname: kafka-connect
-    container_name: kafka-connect
-    depends_on:
-      - kafka
-    ports:
-      - "8083:8083"
-    environment:
-      # Kafka Connect configuration parameters
-      CONNECT_BOOTSTRAP_SERVERS: 'kafka:29092'
-      CONNECT_REST_PORT: 8083
-      CONNECT_GROUP_ID: 'connect-cluster'
-      CONNECT_CONFIG_STORAGE_TOPIC: '_connect_configs'
-      CONNECT_OFFSET_STORAGE_TOPIC: '_connect_offset'
-      CONNECT_STATUS_STORAGE_TOPIC: '_connect_status'
-      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: "1"
-      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: "1"
-      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: "1"
-      CONNECT_KEY_CONVERTER: 'org.apache.kafka.connect.json.JsonConverter'
-      CONNECT_VALUE_CONVERTER: 'org.apache.kafka.connect.json.JsonConverter'
-      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: 'false'
-      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: 'false'
-      CONNECT_REST_ADVERTISED_HOST_NAME: 'kafka-connect'
-      CONNECT_LOG4J_LOGGERS: 'org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR'
-      CONNECT_INTERNAL_KEY_CONVERTER: 'org.apache.kafka.connect.json.JsonConverter'
-      CONNECT_INTERNAL_VALUE_CONVERTER: 'org.apache.kafka.connect.json.JsonConverter'
-      CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
-      CONNECT_LISTENERS: "http://kafka-connect:8083"
-    volumes:
-      - ./connect/configs/jars:/etc/kafka-connect/jars
-
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     hostname: kafka-ui
@@ -75,7 +43,6 @@ services:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
       KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME: local
-      KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS: http://kafka-connect:8083
 
   feed-simulator:
     build:
@@ -91,5 +58,42 @@ services:
     volumes:
       - ../:/production
 
+  fetcher:
+    build:
+      context: ./fetcher
+      dockerfile: Dockerfile
+      target: production
+    labels:
+      container-name: fetcher
+    hostname: fetcher
+    container_name: fetcher
+    depends_on:
+      - kafka
+      - feed-simulator
+    ports:
+      - "8091:8091"
+    environment:
+      OUTAGES_RSS_URL: http://feed-simulator:8090
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    volumes:
+      - ../:/production
+
+  parser:
+    build:
+      context: ./parser
+      dockerfile: Dockerfile
+      target: production
+    labels:
+      container-name: parser
+    hostname: parser
+    container_name: parser
+    ports:
+      - "8092:8092"
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    volumes:
+      - ../:/production
 volumes:
   kafka-data:

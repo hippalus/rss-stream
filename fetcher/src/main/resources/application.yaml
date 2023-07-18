@@ -1,7 +1,7 @@
 spring:
   kafka:
     producer:
-      bootstrap-servers: localhost:9092
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
       properties:
         sasl:
           mechanism: PLAIN
@@ -12,10 +12,17 @@ spring:
       key-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       client-id: feed-fetcher
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
 
 fetcher:
   rss-feed-providers:
     outages:
-      url: http://localhost:8090
+      url: ${OUTAGES_RSS_URL:http://localhost:8090}
       fetch-period: PT20S
-      output-topic: outages
+      output-topic:
+        name: outages
+        partition: 3
+        replication: 1
+
+server:
+  port: 8091

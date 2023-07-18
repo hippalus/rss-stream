@@ -30,16 +30,30 @@ public class FeedProviderConfigurations {
         return this.rssFeedProviders.get(providerId);
     }
 
-    public String getOutputTopic(final ProviderId providerId) {
+    public String getOutputTopicName(final ProviderId providerId) {
+        return this.getOutputTopic(providerId).getName();
+    }
+
+    public TopicProperties getOutputTopic(final ProviderId providerId) {
         return this.rssFeedProviders.get(providerId).getOutputTopic();
     }
+
 
     @Data
     @Configuration
     public static class FeedProviderConfiguration {
         private String url;
-        private String outputTopic;
+        private TopicProperties outputTopic = new TopicProperties();
         private Duration fetchPeriod = Duration.ofSeconds(20);
+    }
+
+    @Data
+    @Configuration
+    @ConfigurationProperties(prefix = "kafka-topics")
+    public static class TopicProperties {
+        private String name;
+        private int partition;
+        private int replication;
     }
 
     public enum ProviderId {

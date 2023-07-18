@@ -15,8 +15,8 @@ public class FeedItemPublisherKafkaAdapter implements FeedItemPublisher {
     private final KafkaTemplate<Object, Object> kafkaTemplate;
 
     @Override
-    public void publish(final String target, final Object key, final Item value) {
-        this.kafkaTemplate.send(target, key, value)
+    public void publish(final String topic, final Object key, final Item value) {
+        this.kafkaTemplate.send(topic, key, value)
                 .whenComplete((result, ex) -> {
                     if (ex != null) {
                         log.error("Failed to send item {}", key, ex);

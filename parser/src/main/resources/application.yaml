@@ -1,0 +1,47 @@
+spring:
+  kafka:
+    producer:
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+      key-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    streams:
+      cleanup:
+        on-shutdown: true
+        on-startup: true
+      auto-startup: true
+      application-id: rss-stream-parser
+      client-id: rss-stream-parser-client
+      replication-factor: 1
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+      state-dir: /tmp/kafka-streams
+    properties:
+      sasl:
+        mechanism: PLAIN
+        #jaas:
+        #  config: config
+      security:
+        protocol: PLAINTEXT
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+rss-stream-parser-app:
+  topics:
+    outages:
+      name: outages
+      replication: 1
+      partition: 3
+    customer-outages:
+      name: customer-outages
+      replication: 1
+      partition: 3
+    business-outages:
+      name: business-outages
+      replication: 1
+      partition: 3
+  files:
+    business-outages-file: ${BUSINESS_OUTAGES_FILE:business_outages.json}
+    customer-outages-file: ${CUSTOMER_OUTAGES_FILE:customer_outages.json}
+    indent-output-enabled: true
+
+
+server:
+  port: 8092

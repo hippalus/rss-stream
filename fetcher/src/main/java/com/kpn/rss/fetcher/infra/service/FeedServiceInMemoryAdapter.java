@@ -12,7 +12,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static com.kpn.rss.fetcher.infra.configuration.FeedProviderConfigurations.ProviderId;
 
-//TODO: use Bloom filter or Offset storage or distributed cache like Redis
+//TODO: FeedServiceInMemoryAdapter causes events to be re-publish when the application is restarted.
+// Use Bloom filter or Offset storage or distributed cache like Redis for consistent check point
 @Repository
 public class FeedServiceInMemoryAdapter implements FeedService {
 

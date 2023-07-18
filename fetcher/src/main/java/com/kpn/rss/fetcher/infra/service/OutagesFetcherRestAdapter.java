@@ -39,13 +39,12 @@ public class OutagesFetcherRestAdapter implements FetcherService {
 
     @Override
     public Set<Item> fetchNewItems(final Set<Item> lastItems) {
-        final ResponseEntity<byte[]> response = this.outagesRssClient.outages()
-                .block();
+        final ResponseEntity<byte[]> response = this.outagesRssClient.outages().block();
 
         final byte[] source = requireNonNull(requireNonNull(response).getBody());
 
         final InputStream inputStream = new ByteArrayInputStream(source);
-        final Optional<SyndFeed> optionalSyndFeed = fetchFeed(inputStream);
+        final Optional<SyndFeed> optionalSyndFeed = toFeed(inputStream);
 
         final Set<Item> items = optionalSyndFeed.map(this::getItems).orElseGet(Set::of);
 
@@ -66,16 +65,16 @@ public class OutagesFetcherRestAdapter implements FetcherService {
 
         return syndFeed.getEntries()
                 .stream()
-                .map(syndEntry -> this.toModel(channel, syndEntry))
+                .map(syndEntry -> this.toItem(channel, syndEntry))
                 .collect(Collectors.toSet());
     }
 
-    private Item toModel(final Channel channel, final SyndEntry syndEntry) {
+    private Item toItem(final Channel channel, final SyndEntry syndEntry) {
         final String category = syndEntry.getCategories().stream()
                 .findFirst()
                 .map(SyndCategory::getName)
                 .map(OutagesFetcherRestAdapter::trim)
-                .orElse(null);
+                .orElse("");
 
         final List<Element> foreignMarkup = syndEntry.getForeignMarkup();
 
@@ -139,7 +138,7 @@ public class OutagesFetcherRestAdapter implements FetcherService {
                 .map(link -> trim(link.getHref()));
     }
 
-    private static Optional<SyndFeed> fetchFeed(final InputStream inputStream) {
+    private static Optional<SyndFeed> toFeed(final InputStream inputStream) {
         try {
             final SyndFeedInput input = new SyndFeedInput();
             return Optional.of(input.build(new XmlReader(inputStream)));
@@ -150,7 +149,7 @@ public class OutagesFetcherRestAdapter implements FetcherService {
     }
 
     private static String trim(final String string) {
-        return string == null ? null : string.trim();
+        return string == null ? "" : string.trim();
     }
 
 }

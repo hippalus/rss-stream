@@ -24,4 +24,6 @@ public class RssFeedController {
         final byte[] outagesBytes = resource.getInputStream().readAllBytes();
         return ResponseEntity.ok().body(outagesBytes);
     }
+
+    //TODO:  Add POST, PUT or PATCH endpoints for crud operation of rss feeds to make realistic simulation.
 }
