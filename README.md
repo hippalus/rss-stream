@@ -1,9 +1,11 @@
 # Data streaming team KPN
+
 # RSS parser programming challenge
 
 ## Welcome
 
-Dear Candidate - first of all thank you for participating and accepting the challenge. We appreciate your efforts and hope to soon meet you in person.
+Dear Candidate - first of all thank you for participating and accepting the challenge. We appreciate your efforts and hope to soon
+meet you in person.
 
 ## General rules
 
@@ -11,11 +13,13 @@ There are not many rules, the few are there to provide a light framework and to 
 Please observe the following:
 
 - The solution will need to be implemented in the Java language (11 or later) or Scala (2.12 or later)
-- Please be honest to us and to yourself and do not spend more than 8 hours of work on this project including research and development
+- Please be honest to us and to yourself and do not spend more than 8 hours of work on this project including research and
+  development
 - You are free to use any Java and/or Scala libraries
 - You are free to structure the project as you like
 - You can choose your build/project management system, please provide build instructions in a separate text file
-- Please provide a small description of your solution with possible performance upgrades that could be added in the future or pitfalls of the current solution
+- Please provide a small description of your solution with possible performance upgrades that could be added in the future or
+  pitfalls of the current solution
 - Bonus points can be earned by
   - using a data engineering related solution (small data processing pipeline)
   - using Object Oriented design patterns and abstraction and/or a Functional approach
@@ -25,18 +29,25 @@ Please observe the following:
 
 ## The task at hand
 
-The challenge is to parse the provided legacy RSS feed and generate two JSON files that can be compared to the reference JSON files provided in the project. The RSS feed is a list of planned and unplanned outages that is affecting the company's networks. The solution must be able to handle feeds of any size, including unbounded.
-Outages.xml is the feed itself - it contains test data that needs to be processed and separated out into a customer outages and business outages JSON file. The two included JSON files are for reference/test - so please don't overwrite them. You can use them to compare against your own generated JSON files. The language of the RSS file is Dutch, but reading it should not pose a problem as the XML structure itself is in English. It is a real world example therefore a realistic programming situation at our company.
+The challenge is to parse the provided legacy RSS feed and generate two JSON files that can be compared to the reference JSON
+files provided in the project. The RSS feed is a list of planned and unplanned outages that is affecting the company's networks.
+The solution must be able to handle feeds of any size, including unbounded.
+Outages.xml is the feed itself - it contains test data that needs to be processed and separated out into a customer outages and
+business outages JSON file. The two included JSON files are for reference/test - so please don't overwrite them. You can use them
+to compare against your own generated JSON files. The language of the RSS file is Dutch, but reading it should not pose a problem
+as the XML structure itself is in English. It is a real world example therefore a realistic programming situation at our company.
 
 ## The logic that needs to be implemented for a successful conversion:
 
 - If the value of the tag <james:locations> contains either ZMST or ZMOH the outage item will be in the business_outages.json
-- The <description> tag contains the beginning (Starttijd:) and the end (Eindtijd:) of the outage - you will need to parse those out of the field
-- If either the beginning (Starttijd:) or the end (Eindtijd:) is "onbekend" (unknown) then the mapping startDate and/or endDate will need to have the value "Onbekend" in the output JSON
+- The <description> tag contains the beginning (Starttijd:) and the end (Eindtijd:) of the outage - you will need to parse those
+  out of the field
+- If either the beginning (Starttijd:) or the end (Eindtijd:) is "onbekend" (unknown) then the mapping startDate and/or endDate
+  will need to have the value "Onbekend" in the output JSON
 - The status field in the output JSON files will need to conform to the following rules:
-    - If the endDate is in the future or its value is "onbekend", the status field in the JSON should be: "Actueel"
-    - If the startDate is in the future, the status should be: "Gepland"
-    - If the endDate is in the past, the status should be: "Opgelost"
+  - If the endDate is in the future or its value is "onbekend", the status field in the JSON should be: "Actueel"
+  - If the startDate is in the future, the status should be: "Gepland"
+  - If the endDate is in the past, the status should be: "Opgelost"
 
 # Tips
 
@@ -55,6 +66,86 @@ If you have any concerns - related to what is stated above or the programming ch
 
 ## Architecture and Design Choices
 
+An overview of the RSS Parser application, which consists of three modules: RSS Simulator, Fetcher, and
+Parser. The application utilizes KafkaStreams, Docker, Spring Boot, and Rome library for RSS parsing. Each module serves a
+specific purpose in the overall workflow.
+
 ![SystemDesign.png](docs%2FSystemDesign.png)
 
+### Modules
+
+- **RSS Simulator**: This module acts as a web server and simulates a static RSS XML file. It exposes an HTTP GET endpoint that
+  allows you to retrieve the simulated RSS feed. It is responsible for serving the XML file used by the Fetcher module.
+
+- **Fetcher**: The Fetcher module periodically fetches the RSS feed from the RSS Simulator. It retrieves the XML file, converts it
+  into individual items using the Rome library, and publishes each item to the "outages" topic in Kafka. The Fetcher ensures a
+  continuous stream of RSS items for further processing.
+
+- **Parser**: The Parser module is the core component of the application and is implemented as a KafkaStreams application. It
+  consumes the "outages" topic, processes the incoming RSS items, and performs several operations on the data. The Parser module
+  follows
+  the streaming topology graph that is provided below to split the stream into two branches based on the outage type. It then
+  sinks the data
+  for
+  each branch into separate topics, namely "business-outages" and "customer-outages." These topics can be used for further
+  analysis,querying or new streaming topologies.
+
+  The Parser module also includes additional sub-topologies for global stores, as mentioned in the graph below. These
+  sub-topologies
+  are responsible for collecting outages data and storing it in GlobalPersistentKeyValue stores based on RockDB. The data is
+  stored in
+  two key-value stores,
+  one for business outages and the other for customer outages. These stores can be used for further analysis or querying.
+  Furthermore, the Parser module includes a component that periodically flushes the key-value data from the KafkaStreams stores
+  into JSON files. Specifically, it generates two JSON files: <mark>customer_outages.json</mark> and <mark>
+  business_outages.json</mark>. These files contain
+  the respective data from the key-value stores and can be used for external processing or reporting.
+
 ![KStreamsTopologyGraph.png](docs%2FKStreamsTopologyGraph.png)
+
+## Language and Framework
+
+The RSS Parser application utilizes the following technologies:
+
+- **KafkaStreams**: A powerful library for building stream processing applications using Apache Kafka.
+- **Docker**: A containerization platform used to package the application and its dependencies into containers.
+- **Spring Boot**: A Java framework that simplifies the development of standalone, production-grade applications.
+- **Rome**: A Java library for parsing, generating, and manipulating RSS and Atom feeds.
+
+## How to Run the Application
+
+To run the application, please follow these steps:
+
+1. Clone the repository and ensure that Docker is installed and running on your machine.
+2. Navigate to the scripts folder in project directory by executing the following command in your terminal or command
+   prompt:
+
+```bash
+cd scripts
+```
+
+3. Run the following script to start the application using Docker Compose:
+
+```bash
+sh start.sh
+```
+
+4. Run the following script to down the application using Docker Down:
+
+```bash
+sh stop.sh
+```
+
+## Testing
+
+```bash
+cd scripts
+```
+
+```bash
+sh test.sh
+```
+
+## Kafka UI
+
+Monitoring for Kafka please visit url http://localhost:8084/topics
