@@ -149,3 +149,7 @@ sh test.sh
 ## Kafka UI
 
 Monitoring for Kafka please visit url http://localhost:8084/topics
+
+## To Check Outage Json Files
+
+![img_4.png](docs%2Fimg_4.png)
