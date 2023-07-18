@@ -1,10 +1,8 @@
 package com.kpn.rss.parser.infra.streams;
 
 import com.kpn.rss.parser.domain.model.Outage;
-import com.kpn.rss.parser.domain.model.OutageType;
 import com.kpn.rss.parser.domain.model.inbound.Item;
 import com.kpn.rss.parser.domain.service.OutageProcessor;
-import com.kpn.rss.parser.domain.service.OutageService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,16 +27,16 @@ import static com.kpn.rss.parser.infra.streams.Constants.*;
 public class OutageStreamsTopology {
     private final StreamsBuilder streamsBuilder;
     private final OutageProcessor outageProcessor;
-    private final OutageService outageService;
     private final Topic<String, Item> outagesTopic;
     private final Topic<String, Outage> businessOutagesTopic;
     private final Topic<String, Outage> customerOutagesTopic;
 
     @PostConstruct
     public void build() {
+        final KStream<String, Item> outageSourceStream = this.streamsBuilder.stream(this.outagesTopic.name(), this.outagesTopic.consumed());
 
         final Map<String, KStream<String, Item>> outageKStreamsByType =
-                this.streamsBuilder.stream(this.outagesTopic.name(), this.outagesTopic.consumed())
+                outageSourceStream
                         .split(Named.as(BRANCH_PREFIX))
                         .branch((key, rssItem) -> rssItem.isBusinessOutage(), Branched.as(BUSINESS))
                         .branch((key, rssItem) -> rssItem.isCustomerOutage(), Branched.as(CUSTOMER))
@@ -71,15 +69,16 @@ public class OutageStreamsTopology {
                 businessStoreBuilder,
                 this.businessOutagesTopic.name(),
                 this.businessOutagesTopic.consumed(),
-                () -> new OutageCollector(BUSINESS_OUTAGES_STORE, OutageType.CUSTOMER, this.outageService)
+                () -> new OutageCollector(BUSINESS_OUTAGES_STORE)
         );
 
         this.streamsBuilder.addGlobalStore(
                 customerStoreBuilder,
                 this.customerOutagesTopic.name(),
                 this.customerOutagesTopic.consumed(),
-                () -> new OutageCollector(CUSTOMER_OUTAGES_STORE, OutageType.CUSTOMER, this.outageService)
+                () -> new OutageCollector(CUSTOMER_OUTAGES_STORE)
         );
+
         final Topology topology = this.streamsBuilder.build();
 
         final TopologyDescription topologyDescription = topology.describe();

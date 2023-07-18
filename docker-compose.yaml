@@ -31,18 +31,17 @@ services:
       - ./scripts/update_run.sh:/tmp/update_run.sh
     command: "bash -c 'if [ ! -f /tmp/update_run.sh ]; then echo \"ERROR: Did you forget the update_run.sh file that came with this docker-compose.yml file?\" && exit 1 ; else /tmp/update_run.sh && /etc/confluent/docker/run ; fi'"
 
-  kafka-ui:
-    image: provectuslabs/kafka-ui:latest
-    hostname: kafka-ui
-    container_name: kafka-ui
+  redpanda:
+    image: docker.redpanda.com/redpandadata/console:v2.2.3
+    container_name: redpanda
+    environment:
+      KAFKA_BROKERS: kafka:29092
+      KAFKA_CLIENTID: redpanda
+      KAFKA_SASL_ENABLED: false
+      KAFKA_TLS_ENABLED: false
+      KAFKA_TLS_INSECURESKIPTLSVERIFY: true
     ports:
       - "8084:8080"
-    depends_on:
-      - kafka
-    environment:
-      KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
-      KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME: local
 
   feed-simulator:
     build:
