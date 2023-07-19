@@ -25,6 +25,7 @@ import static com.kpn.rss.parser.infra.streams.Constants.*;
 @Service
 @RequiredArgsConstructor
 public class OutageStreamsTopology {
+
     private final StreamsBuilder streamsBuilder;
     private final OutageProcessor outageProcessor;
     private final Topic<String, Item> outagesTopic;
@@ -51,38 +52,41 @@ public class OutageStreamsTopology {
                 .to(this.customerOutagesTopic.name(), this.customerOutagesTopic.produced());
 
         // Define state stores
-        final StoreBuilder<KeyValueStore<String, Outage>> businessStoreBuilder =
-                Stores.keyValueStoreBuilder(
-                        Stores.persistentKeyValueStore(BUSINESS_OUTAGES_STORE),
-                        this.businessOutagesTopic.keySerde(),
-                        this.businessOutagesTopic.valueSerde()
-                ).withLoggingDisabled();
+        final StoreBuilder<KeyValueStore<String, Outage>> businessStoreBuilder = this.getBusinessStoreBuilder();
+        final StoreBuilder<KeyValueStore<String, Outage>> customerStoreBuilder = this.getCustomerStoreBuilder();
 
-        final StoreBuilder<KeyValueStore<String, Outage>> customerStoreBuilder =
-                Stores.keyValueStoreBuilder(
-                        Stores.persistentKeyValueStore(CUSTOMER_OUTAGES_STORE),
-                        this.customerOutagesTopic.keySerde(),
-                        this.customerOutagesTopic.valueSerde()
-                ).withLoggingDisabled();
+        final Topology outageTopology = this.streamsBuilder
+                .addGlobalStore(
+                        customerStoreBuilder,
+                        this.customerOutagesTopic.name(),
+                        this.customerOutagesTopic.consumed(),
+                        () -> new OutageCollector(CUSTOMER_OUTAGES_STORE)
+                ).addGlobalStore(
+                        businessStoreBuilder,
+                        this.businessOutagesTopic.name(),
+                        this.businessOutagesTopic.consumed(),
+                        () -> new OutageCollector(BUSINESS_OUTAGES_STORE)
+                ).build();
 
-        this.streamsBuilder.addGlobalStore(
-                businessStoreBuilder,
-                this.businessOutagesTopic.name(),
-                this.businessOutagesTopic.consumed(),
-                () -> new OutageCollector(BUSINESS_OUTAGES_STORE)
-        );
 
-        this.streamsBuilder.addGlobalStore(
-                customerStoreBuilder,
-                this.customerOutagesTopic.name(),
-                this.customerOutagesTopic.consumed(),
-                () -> new OutageCollector(CUSTOMER_OUTAGES_STORE)
-        );
-
-        final Topology topology = this.streamsBuilder.build();
-
-        final TopologyDescription topologyDescription = topology.describe();
+        final TopologyDescription topologyDescription = outageTopology.describe();
         log.info(topologyDescription.toString());
+    }
+
+    private StoreBuilder<KeyValueStore<String, Outage>> getBusinessStoreBuilder() {
+        return Stores.keyValueStoreBuilder(
+                Stores.persistentKeyValueStore(BUSINESS_OUTAGES_STORE),
+                this.businessOutagesTopic.keySerde(),
+                this.businessOutagesTopic.valueSerde()
+        ).withLoggingDisabled();
+    }
+
+    private StoreBuilder<KeyValueStore<String, Outage>> getCustomerStoreBuilder() {
+        return Stores.keyValueStoreBuilder(
+                Stores.persistentKeyValueStore(CUSTOMER_OUTAGES_STORE),
+                this.customerOutagesTopic.keySerde(),
+                this.customerOutagesTopic.valueSerde()
+        ).withLoggingDisabled();
     }
 
 }
