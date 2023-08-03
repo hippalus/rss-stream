@@ -2,6 +2,7 @@ package com.kpn.rss.parser.domain.service;
 
 import com.kpn.rss.parser.domain.model.Outage;
 import com.kpn.rss.parser.domain.model.OutageStatus;
+import com.kpn.rss.parser.domain.model.OutageType;
 import com.kpn.rss.parser.domain.model.inbound.Item;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,6 +19,8 @@ import java.util.regex.Pattern;
 @Slf4j
 @Service
 public class OutageProcessor {
+    private static final String ZMOH = "ZMOH";
+    private static final String ZMST = "ZMST";
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     private static final Pattern START_DATE_PATTERN = Pattern.compile("Starttijd: (\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2})");
     private static final Pattern END_DATE_PATTERN = Pattern.compile("Eindtijd: ((\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2})|(?i)onbekend)");
@@ -35,7 +39,17 @@ public class OutageProcessor {
                 .startDate(this.formatDate(startDate))
                 .endDate(this.formatDate(endDate))
                 .status(this.determineStatus(startDate, endDate))
+                .type(this.outageType(item))
                 .build();
+    }
+
+    public OutageType outageType(final Item item) {
+        final String locations = item.locations();
+        //TODO: can use generic  predicates for customization
+        if (Objects.nonNull(locations) && (locations.contains(ZMOH) || locations.contains(ZMST))) {
+            return OutageType.BUSINESS;
+        }
+        return OutageType.CUSTOMER;
     }
 
     private LocalDateTime extractDate(final String description, final Pattern datePattern) {

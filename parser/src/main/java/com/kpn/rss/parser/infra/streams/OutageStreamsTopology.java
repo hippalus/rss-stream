@@ -34,21 +34,21 @@ public class OutageStreamsTopology {
 
     @PostConstruct
     public void build() {
-        final KStream<String, Item> outageSourceStream = this.streamsBuilder.stream(this.outagesTopic.name(), this.outagesTopic.consumed());
+        final KStream<String, Outage> outageSourceStream = this.streamsBuilder
+                .stream(this.outagesTopic.name(), this.outagesTopic.consumed())
+                .mapValues(this.outageProcessor::createOutageFromItem);
 
-        final Map<String, KStream<String, Item>> outageKStreamsByType =
+        final Map<String, KStream<String, Outage>> outageKStreamsByType =
                 outageSourceStream
                         .split(Named.as(BRANCH_PREFIX))
-                        .branch((key, rssItem) -> rssItem.isBusinessOutage(), Branched.as(BUSINESS))
-                        .branch((key, rssItem) -> rssItem.isCustomerOutage(), Branched.as(CUSTOMER))
+                        .branch((key, outage) -> outage.isBusinessOutage(), Branched.as(BUSINESS))
+                        .branch((key, outage) -> outage.isCustomerOutage(), Branched.as(CUSTOMER))
                         .noDefaultBranch();
 
         outageKStreamsByType.get(BRANCH_BUSINESS)
-                .mapValues(this.outageProcessor::createOutageFromItem)
                 .to(this.businessOutagesTopic.name(), this.businessOutagesTopic.produced());
 
         outageKStreamsByType.get(BRANCH_CUSTOMER)
-                .mapValues(this.outageProcessor::createOutageFromItem)
                 .to(this.customerOutagesTopic.name(), this.customerOutagesTopic.produced());
 
         // Define state stores
