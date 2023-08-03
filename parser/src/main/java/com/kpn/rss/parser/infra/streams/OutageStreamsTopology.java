@@ -41,8 +41,8 @@ public class OutageStreamsTopology {
         final Map<String, KStream<String, Outage>> outageKStreamsByType =
                 outageSourceStream
                         .split(Named.as(BRANCH_PREFIX))
-                        .branch((key, outage) -> outage.isBusinessOutage(), Branched.as(BUSINESS))
-                        .branch((key, outage) -> outage.isCustomerOutage(), Branched.as(CUSTOMER))
+                        .branch((key, outage) -> this.outageProcessor.isBusinessOutage(outage), Branched.as(BUSINESS))
+                        .branch((key, outage) -> this.outageProcessor.isCustomerOutage(outage), Branched.as(CUSTOMER))
                         .noDefaultBranch();
 
         outageKStreamsByType.get(BRANCH_BUSINESS)

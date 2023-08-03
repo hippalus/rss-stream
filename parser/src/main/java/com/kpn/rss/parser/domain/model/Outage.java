@@ -15,14 +15,4 @@ public record Outage(
         OutageType type
 ) {
 
-    @JsonIgnore
-    public boolean isBusinessOutage() {
-        return this.type() == OutageType.BUSINESS;
-    }
-
-    @JsonIgnore
-    public boolean isCustomerOutage() {
-        return this.type() == OutageType.CUSTOMER;
-    }
-
 }
