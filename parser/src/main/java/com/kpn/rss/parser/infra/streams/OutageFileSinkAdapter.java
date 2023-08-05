@@ -49,9 +49,9 @@ public class OutageFileSinkAdapter {
         this.outageFileWriter.writeToJsonFile(this.applicationConfiguration.getFiles().getCustomerOutagesFile(), customerOutages);
     }
 
-    private ReadOnlyKeyValueStore<String, Outage> getStore(final String customerOutagesStore) {
+    private ReadOnlyKeyValueStore<String, Outage> getStore(final String storeName) {
         return Objects.requireNonNull(this.streamsBuilderFactoryBean.getKafkaStreams())
-                .store(StoreQueryParameters.fromNameAndType(customerOutagesStore, QueryableStoreTypes.keyValueStore()));
+                .store(StoreQueryParameters.fromNameAndType(storeName, QueryableStoreTypes.keyValueStore()));
     }
 
     private static List<Outage> getOutages(final ReadOnlyKeyValueStore<String, Outage> store) {

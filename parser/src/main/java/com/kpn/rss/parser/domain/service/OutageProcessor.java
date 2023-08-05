@@ -43,17 +43,10 @@ public class OutageProcessor {
                 .build();
     }
 
-    public boolean isBusinessOutage(final Outage outage) {
-        return outage.type() == OutageType.BUSINESS;
-    }
-
-    public boolean isCustomerOutage(final Outage outage) {
-        return outage.type() == OutageType.CUSTOMER;
-    }
 
     public OutageType outageType(final Item item) {
         final String locations = item.locations();
-        //TODO: can use generic  predicates for customization
+        //TODO: can use generic predicates for customization
         if (Objects.nonNull(locations) && (locations.contains(ZMOH) || locations.contains(ZMST))) {
             return OutageType.BUSINESS;
         }
