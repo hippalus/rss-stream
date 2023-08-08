@@ -29,8 +29,8 @@ public class OutageStreamsTopology {
     private final StreamsBuilder streamsBuilder;
     private final OutageProcessor outageProcessor;
     private final Topic<String, Item> outagesTopic;
-    private final Topic<String, Outage> businessOutagesTopic;
     private final Topic<String, Outage> customerOutagesTopic;
+    private final Topic<String, Outage> businessOutagesTopic;
 
     @PostConstruct
     public void build() {
@@ -45,11 +45,11 @@ public class OutageStreamsTopology {
                         .branch((key, outage) -> outage.type().isCustomerOutage(), Branched.as(CUSTOMER))
                         .noDefaultBranch();
 
-        outageKStreamsByType.get(BRANCH_BUSINESS)
-                .to(this.businessOutagesTopic.name(), this.businessOutagesTopic.produced());
-
         outageKStreamsByType.get(BRANCH_CUSTOMER)
                 .to(this.customerOutagesTopic.name(), this.customerOutagesTopic.produced());
+
+        outageKStreamsByType.get(BRANCH_BUSINESS)
+                .to(this.businessOutagesTopic.name(), this.businessOutagesTopic.produced());
 
         // Define state stores
         final StoreBuilder<KeyValueStore<String, Outage>> businessStoreBuilder = this.getBusinessStoreBuilder();

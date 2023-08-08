@@ -36,7 +36,7 @@ public class KafkaTopicConfiguration {
     @Bean
     public NewTopic outages() {
         final TopicProperties outagesTopic = this.applicationConfiguration.getTopicConfig(TopicId.OUTAGES);
-        return getNewTopic(outagesTopic);
+        return newTopic(outagesTopic);
     }
 
     @Bean
@@ -50,28 +50,32 @@ public class KafkaTopicConfiguration {
     public NewTopic businessOutages() {
         final TopicProperties businessTopic = this.applicationConfiguration.getTopicConfig(TopicId.BUSINESS_OUTAGES);
 
-        return getNewTopic(businessTopic);
+        return newTopic(businessTopic);
     }
 
     @Bean
-    public Topic<String, Outage> businessOutagesTopic(final NewTopic customerOutages) {
+    public Topic<String, Outage> businessOutagesTopic() {
+        final NewTopic businessOutages = this.businessOutages();
         final JsonSerde<Outage> outageJsonSerde = outageSerde();
-        return new Topic<>(customerOutages.name(), Serdes.String(), outageJsonSerde);
+
+        return new Topic<>(businessOutages.name(), Serdes.String(), outageJsonSerde);
     }
 
     @Bean
     public NewTopic customerOutages() {
         final TopicProperties customerTopic = this.applicationConfiguration.getTopicConfig(TopicId.CUSTOMER_OUTAGES);
-        return getNewTopic(customerTopic);
+        return newTopic(customerTopic);
     }
 
     @Bean
-    public Topic<String, Outage> customerOutagesTopic(final NewTopic businessOutages) {
+    public Topic<String, Outage> customerOutagesTopic() {
+        final NewTopic customerOutages = this.customerOutages();
         final JsonSerde<Outage> outageJsonSerde = outageSerde();
-        return new Topic<>(businessOutages.name(), Serdes.String(), outageJsonSerde);
+
+        return new Topic<>(customerOutages.name(), Serdes.String(), outageJsonSerde);
     }
 
-    private static NewTopic getNewTopic(final TopicProperties customerTopic) {
+    private static NewTopic newTopic(final TopicProperties customerTopic) {
         return TopicBuilder.name(customerTopic.getName())
                 .partitions(customerTopic.getPartition())
                 .replicas(customerTopic.getReplication())
