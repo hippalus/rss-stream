@@ -113,6 +113,7 @@ public class KStreamsConfigurations {
         // Stream configurations
         config.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, NUM_STREAM_THREADS_CONFIG);
         config.put(StreamsConfig.METRICS_RECORDING_LEVEL_CONFIG, METRICS_RECORDING_LEVEL_CONFIG);
+        config.put(StreamsConfig.TOPOLOGY_OPTIMIZATION_CONFIG, StreamsConfig.OPTIMIZE);
         config.put(StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG, WallclockTimestampExtractor.class);
 
         // Serialization configurations
