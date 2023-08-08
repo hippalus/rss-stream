@@ -28,7 +28,7 @@ specific purpose in the overall workflow.
 
   The Parser module also includes additional sub-topologies for global stores, as mentioned in the graph below. These
   sub-topologies
-  are responsible for collecting outages data and storing it in GlobalPersistentKeyValue stores based on RockDB. The data is
+  are responsible for collecting outages data and storing it in GlobalPersistentKeyValue stores based on RocksDB. The data is
   stored in
   two key-value stores,
   one for business outages and the other for customer outages. These stores can be used for further analysis or querying.
