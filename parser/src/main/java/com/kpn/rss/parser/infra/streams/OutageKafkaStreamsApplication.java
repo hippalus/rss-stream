@@ -3,7 +3,7 @@ package com.kpn.rss.parser.infra.streams;
 import com.kpn.rss.parser.domain.model.Outage;
 import com.kpn.rss.parser.domain.model.inbound.Item;
 import com.kpn.rss.parser.domain.service.OutageProcessor;
-import jakarta.annotation.PostConstruct;
+import com.kpn.rss.parser.domain.service.StreamsApplication;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.streams.StreamsBuilder;
@@ -15,6 +15,7 @@ import org.apache.kafka.streams.kstream.Named;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -24,17 +25,17 @@ import static com.kpn.rss.parser.infra.streams.Constants.*;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OutageStreamsTopology {
+public class OutageKafkaStreamsApplication implements StreamsApplication {
 
-    private final StreamsBuilder streamsBuilder;
     private final OutageProcessor outageProcessor;
     private final Topic<String, Item> outagesTopic;
     private final Topic<String, Outage> customerOutagesTopic;
     private final Topic<String, Outage> businessOutagesTopic;
 
-    @PostConstruct
-    public void build() {
-        final KStream<String, Outage> outageSourceStream = this.streamsBuilder
+    @Override
+    @Autowired
+    public void buildTopology(final StreamsBuilder streamsBuilder) {
+        final KStream<String, Outage> outageSourceStream = streamsBuilder
                 .stream(this.outagesTopic.name(), this.outagesTopic.consumed())
                 .mapValues(this.outageProcessor::createOutageFromItem);
 
@@ -55,7 +56,7 @@ public class OutageStreamsTopology {
         final StoreBuilder<KeyValueStore<String, Outage>> businessStoreBuilder = this.getBusinessStoreBuilder();
         final StoreBuilder<KeyValueStore<String, Outage>> customerStoreBuilder = this.getCustomerStoreBuilder();
 
-        final Topology outageTopology = this.streamsBuilder
+        final Topology outageTopology = streamsBuilder
                 .addGlobalStore(
                         customerStoreBuilder,
                         this.customerOutagesTopic.name(),
